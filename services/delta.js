@@ -59,7 +59,10 @@ export const fetchAndParseDeltas = async ({
     }
     parseDeltaAndMarkReadReceipts(deltas);
     latestDeltaCursor = deltas[deltas.length - 1].id;
-    fs.writeFileSync(process.env.DELTA_CURSOR_PATH, latestDeltaCursor);
+    fs.writeFileSync(
+      process.env.DELTA_CURSOR_PATH,
+      latestDeltaCursor.toString()
+    );
     return process.env.DELTA_CRON_TIME;
   } catch (error) {
     console.log(error.response || error);
