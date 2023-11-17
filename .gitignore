@@ -1,1 +1,4 @@
 /node_modules
+.env
+delta-cursor.txt
+session.txt

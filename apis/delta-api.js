@@ -9,7 +9,8 @@ let loginRetry = 0;
 export const fetchDeltas = async (params = {}) => {
   if (!deltaService)
     ({ service: deltaService, baseUrl } = await generateService(
-      params.forceFetchToken
+      params.forceFetchToken,
+      'Fetch Delta'
     ));
 
   const crid = generateCrid(path);
@@ -22,6 +23,7 @@ export const fetchDeltas = async (params = {}) => {
       url: path,
       ...params,
     });
+    loginRetry = 0;
     return (res && res.data) || res;
   } catch (error) {
     if (
@@ -31,7 +33,7 @@ export const fetchDeltas = async (params = {}) => {
     ) {
       loginRetry++;
       deltaService = null;
-      await fetchDeltas({
+      return fetchDeltas({
         ...params,
         forceFetchToken: true,
       });

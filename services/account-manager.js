@@ -1,3 +1,4 @@
+import fs from 'fs';
 import { loginAccountApi } from '../apis/login-api.js';
 
 class AccountManagerClass {
@@ -5,7 +6,8 @@ class AccountManagerClass {
     this.account = {};
   }
 
-  async loginAccount() {
+  async loginAccount(source) {
+    console.log('Logging in Account ', source);
     const { token, latestTxnId, appBaseUrl } = await loginAccountApi({
       email: process.env.ACCOUNT_EMAIL,
       password: process.env.ACCOUNT_PASSWORD,
@@ -19,28 +21,32 @@ class AccountManagerClass {
       process.env.SESSION_PATH,
       JSON.stringify({
         token,
-        baseUrl,
+        baseUrl: appBaseUrl,
       })
     );
+    console.log('Account successfully logged in');
   }
 
-  async getAccount(forceFetchToken) {
+  async getAccount(forceFetchToken, source) {
     if (
       !forceFetchToken &&
       this.account &&
       this.account.baseUrl &&
-      this.account.token
+      this.account.token &&
+      this.account.latestTxnId
     ) {
       return this.account;
     }
 
-    await this.loginAccount();
+    await this.loginAccount(`${source} >> getAccount`);
     return this.account;
   }
 
-  async setAccount({ session, baseUrl }) {
-    this.account.token = session;
-    this.account.baseUrl = baseUrl;
+  setAccount(params) {
+    this.account = {
+      ...this.account,
+      ...params,
+    };
   }
 }
 

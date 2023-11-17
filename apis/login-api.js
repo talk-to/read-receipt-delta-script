@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { appBaseUrls } from '../constants/baseUrls.js';
 import { generateCrid } from '../utils/generate-crid.js';
 
 const baseUrls = {
@@ -17,9 +16,9 @@ const newService = (defaults = {}) => {
 };
 
 export const getAppBaseUrl = async email => {
-  const clusterConfigUrl = `${appBaseUrls.clusterConfig}${encodeURIComponent(
-    email
-  )}`;
+  const clusterConfigUrl = `${
+    process.env.CLUSTER_CONFIG_URL
+  }${encodeURIComponent(email)}`;
   return axios.get(clusterConfigUrl);
 };
 
@@ -36,7 +35,6 @@ export const loginAccountApi = async (
     baseUrls.apiBaseUrl = apiBaseUrl;
     baseUrls.bllBaseUrl = bllBaseUrl;
   }
-  console.log(baseUrls);
 
   const { apiBaseUrl } = baseUrls;
 
@@ -69,7 +67,6 @@ export const loginAccountApi = async (
     if (!result || !result.mailId || !result.session || !result.baseUrl) {
       throw new Error('Invalid Api response');
     }
-    console.log(result.session);
     return {
       token: result.session,
       latestTxnId: result.latestTxnId,

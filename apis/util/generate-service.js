@@ -13,9 +13,12 @@ const newService = (defaults = {}) => {
   return _service;
 };
 
-export const generateService = async forceFetchToken => {
+export const generateService = async (forceFetchToken, source) => {
   if (!account.baseUrl || forceFetchToken) {
-    const acc = await AccountManager.getAccount(forceFetchToken);
+    const acc = await AccountManager.getAccount(
+      forceFetchToken,
+      `${source} >> generateService, forceFetchToken: ${forceFetchToken}`
+    );
     account.baseUrl = acc.baseUrl;
     account.token = acc.token;
   }

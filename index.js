@@ -17,26 +17,48 @@ global.console.log = (...log) => {
   originalConsoleLog(`${new Date()}`, ...log);
 };
 
-(async () => {
+const initValues = () => {
+  console.log('Inside init Values');
   try {
     lastDeltaCursor = fs.readFileSync(process.env.DELTA_CURSOR_PATH).toString();
-    lastSessionString = fs.readFileSync(process.env.SESSION_PATH).toString();
-    if (lastSessionString) {
-      const { session, baseUrl } = JSON.parse(lastSessionString);
-      lastSession = session;
-      lastBaseUrl = baseUrl;
-    }
   } catch (error) {
     lastDeltaCursor = undefined;
   }
   try {
+    const lastSessionString = fs
+      .readFileSync(process.env.SESSION_PATH)
+      .toString();
+    if (lastSessionString) {
+      const { token, baseUrl } = JSON.parse(lastSessionString);
+      lastSession = token;
+      lastBaseUrl = baseUrl;
+    }
+  } catch (error) {
+    lastSession = undefined;
+    lastBaseUrl = undefined;
+  }
+};
+
+(async () => {
+  initValues();
+  try {
+    console.log(
+      `lastDeltaCursor: ${
+        lastDeltaCursor ? lastDeltaCursor.length : 0
+      } lastSession: ${
+        lastSession ? lastSession.length : 0
+      } lastBaseUrl: ${lastBaseUrl}`
+    );
     if (!lastSession || !lastBaseUrl) {
-      const { token, baseUrl } = await AccountManager.getAccount(true);
+      const { token, baseUrl } = await AccountManager.getAccount(
+        true,
+        'Session, Baseurl not found'
+      );
       lastSession = token;
       lastBaseUrl = baseUrl;
     } else {
       AccountManager.setAccount({
-        session: lastSession,
+        token: lastSession,
         baseUrl: lastBaseUrl,
       });
     }

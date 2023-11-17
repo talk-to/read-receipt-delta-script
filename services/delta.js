@@ -1,6 +1,8 @@
 import fs from 'fs';
 import { fetchDeltas } from '../apis/delta-api.js';
+import AccountManager from './account-manager.js';
 import { fetchMessageBodyAndParse } from './message.js';
+import { sendFlockMessage } from '../utils/send-flock-message.js';
 
 let latestDeltaCursor;
 export const areDetailsEmpty = ({ details }) =>
@@ -11,7 +13,7 @@ const parseDeltaDetails = delta => {
   return JSON.parse(delta.details);
 };
 
-const parseDeltaAndMarkReadReceipts = async deltas => {
+const parseDeltaAndMarkReadReceipts = deltas => {
   deltas.forEach(delta => {
     if (!delta || delta.ot !== 't' || (delta.tt !== 'm' && delta.tt !== 'c'))
       return;
@@ -29,8 +31,19 @@ export const fetchAndParseDeltas = async ({
   deltaCronTime,
 }) => {
   try {
-    if (!latestDeltaCursor && lastDeltaCursor)
+    if (!latestDeltaCursor && lastDeltaCursor) {
       latestDeltaCursor = lastDeltaCursor;
+      AccountManager.setAccount({
+        latestTxnId: lastDeltaCursor,
+      });
+    } else if (!latestDeltaCursor && !lastDeltaCursor) {
+      const { latestTxnId } = await AccountManager.getAccount(
+        false,
+        'LastDeltaCursor not found'
+      );
+      latestDeltaCursor = latestTxnId;
+      fs.writeFileSync(process.env.DELTA_CURSOR_PATH, latestDeltaCursor);
+    }
 
     console.log(`fetching delta using cursor ${latestDeltaCursor}`);
 
@@ -44,7 +57,7 @@ export const fetchAndParseDeltas = async ({
       console.log('Empty Delta');
       return process.env.DELTA_CRON_TIME;
     }
-    await parseDeltaAndMarkReadReceipts(deltas);
+    parseDeltaAndMarkReadReceipts(deltas);
     latestDeltaCursor = deltas[deltas.length - 1].id;
     fs.writeFileSync(process.env.DELTA_CURSOR_PATH, latestDeltaCursor);
     return process.env.DELTA_CRON_TIME;
