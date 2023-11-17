@@ -42,7 +42,10 @@ export const fetchAndParseDeltas = async ({
         'LastDeltaCursor not found'
       );
       latestDeltaCursor = latestTxnId;
-      fs.writeFileSync(process.env.DELTA_CURSOR_PATH, latestDeltaCursor);
+      fs.writeFileSync(
+        process.env.DELTA_CURSOR_PATH,
+        latestDeltaCursor.toString()
+      );
     }
 
     console.log(`fetching delta using cursor ${latestDeltaCursor}`);
